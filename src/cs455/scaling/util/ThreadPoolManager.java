@@ -53,7 +53,7 @@ public class ThreadPoolManager implements Runnable {
 			        // a channel is ready for reading so create new work unit
 			    	System.out.println("Recieved a Work Unit");
 			    	WorkUnit unit = new WorkUnit((SocketChannel) key.channel());
-			    	System.out.println("created Unit");
+			    	//System.out.println("created Unit");
 			    	list.put(unit);
 			    	counts.put(key, counts.get(key) + 1);
 			    	System.out.println("Passed Off work unit");
