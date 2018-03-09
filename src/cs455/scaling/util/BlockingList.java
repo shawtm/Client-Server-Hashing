@@ -11,7 +11,7 @@ public class BlockingList {
 	
 	public void put(WorkUnit unit){
 		synchronized (list){
-			System.out.println("Got List Lock");
+			//System.out.println("Got List Lock");
 			list.add(unit);
 			list.notify();
 		}

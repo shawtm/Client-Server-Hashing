@@ -1,4 +1,4 @@
-package cs455.scaling.node;
+package cs455.scaling.server;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

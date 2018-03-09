@@ -40,28 +40,31 @@ public class ThreadPoolManager implements Runnable {
 			        // a connection was accepted by a ServerSocketChannel so create new channel for receiving
 					ServerSocketChannel servChan = (ServerSocketChannel) key.channel();
 					try {
-						System.out.println("Accepting new connection");
 						SocketChannel chan = servChan.accept();
-						chan.configureBlocking(false);
-						SelectionKey newkey = chan.register(sel, SelectionKey.OP_READ);
-						counts.put(newkey, 0);
-						System.out.println("Successfully added new Connection");
+						if (chan != null) {
+							System.out.println("Accepting new connection");
+							chan.configureBlocking(false);
+							SelectionKey newkey = chan.register(sel, SelectionKey.OP_READ);
+							counts.put(newkey, 0);
+							System.out.println("Successfully added new Connection");
+						}
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 			    } else if (key.isReadable()) {
 			        // a channel is ready for reading so create new work unit
-			    	System.out.println("Recieved a Work Unit");
-			    	WorkUnit unit = new WorkUnit((SocketChannel) key.channel());
+			    	//System.out.println("Recieved a Work Unit");
+			    	WorkUnit unit = new WorkUnit(key);
 			    	//System.out.println("created Unit");
 			    	list.put(unit);
 			    	counts.put(key, counts.get(key) + 1);
-			    	System.out.println("Passed Off work unit");
+			    	key.interestOps(SelectionKey.OP_WRITE);
+			    	//System.out.println("Passed Off work unit");
 			    } else if (key.isWritable()) {
 			        // a channel is ready for writing
 			    	// Do nothing 
 			    }
-				keys.remove(key);
+				//keys.remove(key);
 			}
 		}
 	}
@@ -83,12 +86,12 @@ public class ThreadPoolManager implements Runnable {
 		return new Diag(numMessages,numClients,meanMessages,stdDev);
 	}
 	public class Diag{
-		private int numMessages, numClients;
-		private double meanMessages, stdDev;
+		private int numClients;
+		private double meanMessages, stdDev, numMessages;
 		public Diag(int numMessages, int numClients, double meanMessages, double stdDev) {
-			this.numMessages = numMessages;
+			this.numMessages = new Double(numMessages) / 20;
 			this.numClients = numClients;
-			this.meanMessages = meanMessages;
+			this.meanMessages = meanMessages / 20;
 			this.stdDev = stdDev;
 		}
 		public String toString() {
