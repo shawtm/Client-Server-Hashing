@@ -9,18 +9,25 @@ public class BlockingList {
 		list = new LinkedList<>();
 	}
 	
-	public synchronized void put(WorkUnit unit){
-		list.add(unit);
-		list.notify();
+	public void put(WorkUnit unit){
+		synchronized (list){
+			System.out.println("Got List Lock");
+			list.add(unit);
+			list.notify();
+		}
+	}
+
+	public WorkUnit take() throws InterruptedException{
+		synchronized (list) {
+			while (this.isEmpty())
+				list.wait();
+			return list.removeFirst();
+		}
 	}
 	
-	public synchronized WorkUnit take() throws InterruptedException{
-		while (this.isEmpty())
-			list.wait();
-		return list.removeFirst();
-	}
-	
-	private synchronized boolean isEmpty(){
-		return list.isEmpty();
+	private boolean isEmpty(){
+		synchronized (list) {
+			return list.isEmpty();
+		}
 	}
 }

@@ -25,6 +25,7 @@ public class WorkUnit implements Runnable {
 		// Read in from channel
 		ByteBuffer buf = ByteBuffer.allocate(8192);
 		int read = 0;
+		System.out.println("Reading!");
 		while (buf.hasRemaining() && read != -1) {
 			try {
 				read = channel.read(buf);
@@ -35,9 +36,15 @@ public class WorkUnit implements Runnable {
 		// calculate hash
 		try {
 			String hash = SHA1FromBytes(buf.array());
+			// send hash
+			ByteBuffer send = ByteBuffer.allocate(hash.getBytes().length);
+			System.out.println("Sending!");
+			while (send.hasRemaining())
+				channel.write(send);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		// send hash
 	}
 }

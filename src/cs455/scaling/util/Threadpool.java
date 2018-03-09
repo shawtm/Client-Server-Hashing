@@ -5,12 +5,12 @@ public class Threadpool {
 	
 	public Threadpool(int size, BlockingList list){
 		pool = new Thread[size];
-		for (Thread t: pool)
-			t = new Thread(new Worker(list));
+		for (int i = 0; i < size; i++)
+			pool[i] = new Thread(new Worker(list));
 		this.startThreads();
 	}
 	private void startThreads(){
-		for (Thread t: pool)
-			t.start(); 
+		for (int i = 0; i < pool.length; i++)
+			pool[i].start(); 
 	}
 }

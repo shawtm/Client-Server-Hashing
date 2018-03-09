@@ -15,60 +15,73 @@ import cs455.scaling.util.WorkUnit;
 public class Client {
 	private int messages, port;
 	private LinkedList<String> hashes;
-	private ByteBuffer buf;
+	private byte[] buf;
 	private Random r;
-	private SocketChannel chan;
 	private String ip;
 	private Selector sel;
 	
 	public Client(String ip, int port, int messages) throws IOException{
 		this.messages = messages;
-		buf = ByteBuffer.allocate(8192); //8kb size for buffer
+		buf = new byte[8192]; //8kb size for buffer
 		this.r = new Random();
-		chan = SocketChannel.open();
 		sel = Selector.open();
 		this.ip = ip;
 		this.port = port;
+		hashes = new LinkedList<>();
 	}
+	
 	public void start() throws InterruptedException, IOException{
-		SocketChannel channel = SocketChannel.open();
-		chan.configureBlocking(false);
-		chan.register(sel, SelectionKey.OP_CONNECT);
-		chan.connect(new InetSocketAddress(ip, port));
+		SocketChannel channel = SocketChannel.open(new InetSocketAddress(ip, port));
+		channel.configureBlocking(false);
+		channel.register(sel, SelectionKey.OP_WRITE);
 		while(true){
+			sel.select();
 			for(SelectionKey key: sel.selectedKeys()) {
-				if(key.isConnectable()){
-					this.connect(key);
+				if(key.isWritable()) {
+					System.out.println("trying to write");
+					// fill buffer with bytes
+					this.fillBuf();
+					// send buffer
+					SocketChannel chan = (SocketChannel) key.channel();
+					ByteBuffer buffer = ByteBuffer.wrap(buf);
+					System.out.println("Writing!");
+					while (buffer.hasRemaining())
+						chan.write(buffer);
+					key.interestOps(SelectionKey.OP_READ);
+				}else if(key.isReadable()) {
+					ByteBuffer buffer = ByteBuffer.allocate(40);
+					SocketChannel chan = (SocketChannel) key.channel();
+					int read = 0;
+					while (buffer.hasRemaining() && read != -1) 
+						read = chan.read(buffer);
+					String hash = new String(buffer.array());
+					hashes.remove(hash);
 				}
-				// fill buffer with bytes
-				this.fillBuf();
-				// send buffer
-				this.sendBuf();
 				// sleep
 			}
 			Thread.sleep((1000/messages));
-			System.out.println("[timestamp] Total Sent Count: x, Total Received Count: y");
+			//System.out.println("[timestamp] Total Sent Count: x, Total Received Count: y");
 		}
 		
 	}
+	
 	private void connect(SelectionKey key) throws IOException {
 		SocketChannel channel = (SocketChannel) key.channel();
 		channel.finishConnect();
 		key.interestOps(SelectionKey.OP_WRITE);
+		System.out.println("Connection Established");
 	} 
+	
 	public void fillBuf(){
-		while(buf.hasRemaining()){
-			buf.put((byte) r.nextInt(128));
-		}
+		for (int i = 0; i < buf.length; i++)
+			buf[i] = (byte) r.nextInt(128);
 		try {
-			hashes.add(WorkUnit.SHA1FromBytes(buf.array()));
+			hashes.add(WorkUnit.SHA1FromBytes(buf));
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
 	}
-	public void sendBuf(){
-		// TODO
-	}
+	
 	public static void main(String[] args) {
 		if (args.length !=3){
 			System.out.println("[ERROR] invalid number of arguments");

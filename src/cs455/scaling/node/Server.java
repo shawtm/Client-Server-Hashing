@@ -23,6 +23,10 @@ public class Server {
 		while (true) {
 			//print diagnostics
 			System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()) + manager.getDiagnostics());
+			try {
+				Thread.sleep(1000*20);
+			} catch (InterruptedException e) {
+			}
 		}
 	}
 	public static void main(String[] args) {
