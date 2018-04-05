@@ -1,7 +1,18 @@
 Author: Tom Shaw
 Class : CS455
 Assignment: PC2
+
 #############################
+
+Big Idea:
+
+This program is meant as an emulation of a server that serves a high number of clients. The central concept is that each of the clients will connect to the server and send ~8kb of random bytes to the server who will hash the whole package and return the resulting hash code.
+
+What makes this project Unique?
+The server uses Java NIO which reduces the number of context switches meaning that the server can handle high numbers of clients without sacrificing throughput.
+
+#############################
+
 Important information:
 
 The makefile needs to be called from outside the src directory to work properly.
@@ -15,6 +26,7 @@ java /cs455/scaling/server/Server <port> <number of threads>
 java /cs455/scaling/client/Client <ip posted on the computers> <port> <message rate>
 
 ###############################
+
 Class Descriptions:
 
 Server: This class receives communications from clients and returns the hash value of the message to the client.
